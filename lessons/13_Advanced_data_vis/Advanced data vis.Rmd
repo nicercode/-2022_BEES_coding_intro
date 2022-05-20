@@ -1,0 +1,461 @@
+
+## Colour schemes
+
+### Continuous colour and discrete colour
+
+### Colour-blindness
+
+https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+
+```{r}
+library(viridis)
+library(hexbin)
+
+tibble(x = rnorm(10000), y = rnorm(10000)) %>%
+  ggplot(aes(x = x, y = y)) +
+  geom_hex() + coord_fixed() +
+  scale_fill_viridis(option="D")+ 
+  theme_bw()
+```
+
+
+
+```{r}
+p <- data %>% 
+  filter(year==1990) %>% 
+  ggplot(aes(life_expectancy, gdp_per_capita)) + 
+  geom_point(size=3, aes(colour = continent)) +
+  scale_y_log10() +
+  scale_color_viridis(discrete=TRUE) +
+  theme_bw()
+
+p
+```
+
+There are many more themes, e.g. from `ggsci` package
+
+Nature Publishing Group
+```{r}
+library(ggsci)
+
+p + scale_color_npg()
+```
+
+A different theme (American Academy of Science):
+```{r}
+p + scale_color_aaas()
+```
+
+## Font size
+
+Change all the font sizes
+
+```{r}
+p + scale_color_aaas() +
+theme(text = element_text(size=18)) 
+```
+
+Change just axis titles
+```{r}
+p + scale_color_aaas() +
+theme(axis.title = element_text(size=18)) 
+```
+
+
+
+## Multiple planels
+
+Load some extra packages
+
+```{r}
+library(janitor)
+library(lubridate)
+library(patchwork)
+library(viridis)
+```
+
+
+```{r}
+#Barplot production budget by Top 6 most common distributors
+top_6 <- movies %>% tabyl(distributor) %>% arrange(-n) %>% 
+  filter(n >= 240) %>% pull(distributor)
+
+A <- movies %>% filter(distributor %in% top_6) %>% 
+ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
+  geom_col() + 
+  ylab("Production budget (USD)") + 
+  xlab("Distribution companies") + 
+  scale_fill_manual(values = c("#A42820", "#5F5647", "#3F5151", "#4E2A1E", "#550307", "#0C1707")) + 
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "none")
+A
+
+#Side by side plot of domestic gross and worldwide gross of Top 6 most common distributors
+distributor_long <- movies %>%
+  filter(distributor %in% top_6) %>% 
+  select(distributor, domestic_gross, worldwide_gross) %>% 
+  pivot_longer(cols = 2:3, names_to = "type")
+
+B <- ggplot(distributor_long, aes(x = reorder(distributor, -value, sum), y = value, fill = type)) + 
+  geom_col(position = "dodge") +
+  ylab("Gross income (USD)") + 
+  xlab("Distribution companies") + 
+  scale_fill_manual(values = c("#550307", "#0C1707"), name = "Type of income", labels = c("Domestic", "Worldwide")) + 
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "bottom",
+        legend.title = element_text(size = 10),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+B
+
+#Plot release date by production budget
+#Set release date as a date
+movies <- movies %>% 
+  mutate(release_date = mdy(release_date))
+
+C <- ggplot(data = movies, aes(x = release_date, y = production_budget)) + 
+  geom_point(alpha = 0.4, colour = "#0C1707") + 
+  xlab("Release Date (Year)") + 
+  ylab("Production budget (USD)") + 
+  theme_bw() 
+C
+
+#Production cost and worldwide gross
+D <- ggplot(data = movies, aes(x = production_budget, y = worldwide_gross)) + 
+  geom_point(alpha = 0.4, colour = "#0C1707") + 
+  geom_point(data = movies %>% filter(production_budget > 150000000 & worldwide_gross > 1000000000), colour = "#A42820") +
+  geom_text(data = movies %>% filter(production_budget > 150000000 & worldwide_gross > 1000000000), aes(label = movie), size = 3, hjust = 1.1) + 
+  geom_point(data = movies %>% filter(production_budget < 50000000 & worldwide_gross > 787000000), colour = "#5F5647") + 
+  geom_text(data = movies %>% filter(production_budget  < 50000000 & worldwide_gross > 787000000), aes(label = movie), size = 3, hjust = -0.1) + 
+  geom_point(data = movies %>% filter(production_budget < 100000000 & worldwide_gross > 1150000000), colour = "gold") + 
+  geom_text(data = movies %>% filter(production_budget < 100000000 & worldwide_gross > 1150000000), aes(label = movie), size = 3, hjust = -0.2) + 
+  ylab("Worldwide gross (USD)") + 
+  xlab("Production budget (USD)") + 
+  theme_bw() 
+D
+
+(A + B + C) / D
+```
+
+
+## Summarise and plot
+
+```{r}
+mpaa_rating_means <- movies %>% 
+  filter(! is.na(mpaa_rating)) %>% 
+  group_by(mpaa_rating) %>% 
+  summarise(mean_worldwide_gross = mean(worldwide_gross),
+            se_worldwide_gross = sd(worldwide_gross)/sqrt(length(worldwide_gross)),
+            lower_worldwide_gross = mean_worldwide_gross - se_worldwide_gross,
+            upper_worldwide_gross = mean_worldwide_gross + se_worldwide_gross) 
+
+head(mpaa_rating_means)
+
+ggplot(data = mpaa_rating_means, aes(x = mpaa_rating, y = mean_worldwide_gross)) + 
+  geom_col() + 
+  geom_errorbar(aes(ymin = lower_worldwide_gross, 
+                    ymax = upper_worldwide_gross),
+                width = 0.2)
+  
+```
+
+## Customise "Accessorising"
+
+```{r}
+#Colour themes
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() + 
+  theme_classic() 
+
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() + 
+  theme_bw() 
+
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() + 
+  theme_dark() 
+
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() + 
+  theme_void() 
+```
+
+```{r}
+#Axis labels
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() +
+  ylab("Production budget (USD)") + 
+  xlab("Genre") + 
+  theme_bw() 
+
+#Axis labels, colour, points and size/type face/font
+ggplot(data = movies, aes(x = genre, y = production_budget, fill = genre)) + 
+  geom_boxplot(outlier.colour = "red", size = 1.2) +
+  ylab("Production budget (USD)") + 
+  xlab("Genre") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(family = "Times", face = "bold.italic", size = 12),
+        axis.title.y = element_text(family = "Times", face = "bold.italic", size = 12))
+```
+
+## Create your own theme - do it once and do it right
+
+```{r}
+thesis_theme <- theme_bw() + 
+  theme(axis.title.x = element_text(family = "Calibri", face = "bold", size = 16),
+        axis.title.y = element_text(family = "Calibri", face = "bold", size = 16),
+        axis.text.x = element_text(family = "Calibri" , size = 12),
+        axis.text.y = element_text(family = "Calibri", size = 12),
+        strip.text = element_text(family = "Calibri", size = 12))
+
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() +
+  ylab("Production budget (USD)") + 
+  xlab("Genre") + 
+  thesis_theme
+```
+
+### Facet wraps
+```{r}
+top6_plot <- movies %>% filter(distributor %in% top_6 & !is.na(mpaa_rating)) %>% 
+  ggplot(data = ., aes(x = production_budget, y = domestic_gross)) +  
+  geom_point() +
+  theme_bw()
+
+top6_plot + 
+  facet_wrap(~distributor) 
+
+top6_plot + 
+  facet_grid(distributor ~ genre) 
+```
+
+### Scientific labels
+https://robjhyndman.com/hyndsight/latex2exp/
+
+```{r}
+#Make some fake data
+n <- 25
+# the paramters
+beta_0 <- 0.0005 # the true intercept
+beta_1 <- 0.02 # the true slope
+sigma <- 0.03 # the true standard deviation
+
+temperature <- seq(20,60, by = 4)
+metabolic_rate <- beta_0 + beta_1*temperature + rnorm(temperature, sd=sigma)
+fake_data <- data_frame(temperature, metabolic_rate)
+
+ggplot(fake_data, aes(x = temperature, y = metabolic_rate)) + 
+  geom_point(size = 3) + 
+  scale_y_log10() +
+  ylab(expression(log~VCO_2~mL~min^{-1})) + 
+  xlab(expression(Temperature^{º}~C)) + 
+  theme(axis.title.y = element_text(size = 30),
+        axis.title.x = element_text(size = 30))
+```
+
+### Add a bit of flair: colour schemes
+-Viridis, great for continuous data
+-Rcolourbrewer Colour blind friendly palettes
+-Wes Anderson palettes
+
+```{r}
+#Colour blind friendly
+library(RColorBrewer)
+display.brewer.all(colorblindFriendly = T)
+
+ggplot(data = movies, aes(x = genre, y = production_budget, fill = genre)) + 
+  geom_violin(trim = F, alpha = 0.7) + 
+  geom_point(colour = "white", size = 1, alpha = 0.1) + 
+  stat_summary(fun.data="data_summary", col = "black") + 
+  scale_fill_brewer(palette = "Dark2") + 
+  thesis_theme + 
+  ylab("Production budget (USD)") + 
+  xlab("Genres") +
+  theme(legend.position = "none")
+
+#Viridis
+library(viridisLite)
+
+ggplot(data = movies, aes(x = production_budget, y = worldwide_gross)) +
+  geom_hex() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  scale_fill_viridis() + 
+  ylab("Production budget (USD)") + 
+  xlab("Worldwide gross (USD)") +
+  thesis_theme
+
+#Wes Andersson
+library(wesanderson)
+
+movies %>% filter(distributor %in% top_6) %>% 
+ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
+  geom_col() + 
+  ylab("Production budget (USD)") + 
+  xlab("Distribution companies") + 
+  scale_fill_manual(values = wes_palette("IsleofDogs1")) + 
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "none")
+
+movies %>% filter(distributor %in% top_6) %>% 
+ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
+  geom_col() + 
+  ylab("Production budget (USD)") + 
+  xlab("Distribution companies") + 
+  scale_fill_manual(values = wes_palette("IsleofDogs1")) + 
+  coord_flip() + 
+  theme_bw() + 
+  theme(legend.position = "none")
+```
+
+### Arranging multiple plots
+https://patchwork.data-imaginist.com/
+```{r}
+#Install package
+#install.packages('patchwork')
+library(patchwork)
+
+#Different layouts
+A / D 
+
+D / (A + C)
+
+(A + B + C) / D
+
+#Annotating
+(A + B) / D + plot_annotation(tag_levels = 'A')
+```
+
+
+**Exercises**: Try to answer these questions below by making some relevant figures
+
+1. Are there more cheap films?
+
+ - Hint: create a histogram-plot with production_budget at the x-axis
+
+```{r, exercise}
+ggplot(movies, aes(x = production_budget)) +
+  geom_histogram()
+```
+ 
+   
+2. What genres make the highest return on investment?
+
+ - Hints
+   - calculate the ratio of worldwide gross profit and production budget
+   - create a box-plot with x-axis representing the genre and y-axis representing the ratio
+   - Rescale y-axis to log scale
+
+```{r, exercise}
+movies_ratio <- movies %>% mutate(ratio=worldwide_gross/production_budget)
+
+ggplot(movies_ratio,aes(x = genre, y = ratio)) +
+  geom_boxplot() +
+   scale_y_log10()
+```
+   
+3. Do expensive movies make more (gross) profit?
+
+ - Hints
+   - create a scatter plot with with the x-axis representing the production_budget and the y-axis representing the worldwide_gross profit
+   - Rescale the x- and y-axis to log scale
+   - add regression line with `stat_smooth()`
+
+```{r, exercise}
+# calculate the ratio of worldwide gross profit and production budget
+
+movies_clean <- movies %>% filter(worldwide_gross!=0)
+
+ggplot(movies_clean, aes(x = production_budget, y = worldwide_gross)) +
+  geom_point(alpha=0.5) +
+  stat_smooth(method = "lm", col = "red", se = FALSE)+
+  scale_x_log10() + scale_y_log10()
+```
+
+
+
+# Customisation: 
+
+**Exercise**: Brain storm how to improve this plot
+
+## scales and axes
+
+We can uses the scales package for customising labels and ticks
+
+```{r}
+library(scales) #  
+
+# calculate profit
+movies_profit <- movies %>% 
+   mutate(profit = worldwide_gross - production_budget)
+
+
+ggplot(movies_profit, aes(x = production_budget, y = profit, color=mpaa_rating)) + # set category/color as mpaa_rating
+   geom_point(alpha = .2) + # alpha: set transparency to .2 or 20%
+   stat_smooth(method = "lm", col="red", se=FALSE) + # add linear regression model
+    scale_x_log10(
+   breaks = scales::trans_breaks("log10", function(x) 10^x),
+   labels = scales::trans_format("log10", scales::math_format(10^.x))) + # log transform x axis and display number in math notation
+   scale_y_continuous(labels = comma) + # log transform y axis and display number in natural notation
+   theme_bw() + # set theme
+   xlab("Production budget in US$") + # change x label
+   ylab("Profit in US$") + # change y label
+   theme(legend.position = "none") # remove the legend (mpaa_rating)
+   
+```
+
+
+## facet_wrap
+
+Add a single line to split by 
+
+```{r}
+
+ggplot(movies_profit, aes(x = production_budget, y = profit, color=mpaa_rating)) + # set category/color as mpaa_rating
+   geom_point(alpha = .2) + # alpha: set transparency to .2 or 20%
+   stat_smooth(method = "lm", col="red", se=FALSE) + # add linear regression model
+    scale_x_log10(
+   breaks = scales::trans_breaks("log10", function(x) 10^x),
+   labels = scales::trans_format("log10", scales::math_format(10^.x))) + # log transform x axis and display number in math notation
+   scale_y_continuous(labels = comma) + # log transform y axis and display number in natural notation
+   theme_bw() + # set theme
+   xlab("Production budget in US$") + # change x label
+   ylab("Profit in US$") + # change y label
+   theme(legend.position = "none") + # remove the legend (mpaa_rating)
+   facet_wrap(~genre)  # split figures by genre
+  
+```
+
+
+## plotly
+
+The package plotly can be used to make plots interactive.
+
+First save the plot as an object and add a fiEld for label:
+
+```{r}
+
+p <- ggplot(movies_profit, aes(x = production_budget, y = profit, color=mpaa_rating, label = movie)) + # set category/color as mpaa_rating
+   geom_point(alpha = .2) + # alpha: set transparency to .2 or 20%
+   facet_wrap(~genre) + # split figures by genre
+    scale_x_log10(
+   breaks = scales::trans_breaks("log10", function(x) 10^x),
+   labels = scales::trans_format("log10", scales::math_format(10^.x))) + # log transform x axis and display number in math notation
+   scale_y_continuous(labels = comma) + # log transform y axis and display number in natural notation
+   theme_bw() + # set theme
+   xlab("Production budget in US$") + # change x label
+   ylab("Profit in US$") # change y label
+```
+
+It is then very easy to turn this into an interactive plot -- you'll need to click on "Viewer" rather than "Plots". You can hover over the points to see the deatils of each.
+
+```{r}
+library(plotly)
+ggplotly(p)
+```
+
+
+

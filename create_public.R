@@ -8,7 +8,7 @@
 
 # To achieve this, put solutions within in a chunk using the following format
 
-# ```{r, drop}
+# ```{r, exercise}
 # your code here
 # ```
 
@@ -45,7 +45,7 @@ for(f in unwanted)
 # Remove solutions from Rmd files
 # This function removes any content in Rmd files with the 
 # following format
-# ```{r, drop}
+# ```{r, exercise}
 # your code here
 # ```
 remove_solutions <- function(file) {

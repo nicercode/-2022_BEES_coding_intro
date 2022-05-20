@@ -77,7 +77,7 @@ Make these data tidy:
 - `data/gapminder/income_per_person_gdppercapita_ppp_inflation_adjusted.csv`
 
 
-```{r}
+```{r, exercise}
 
 data_fertility <- 
   read_csv("data/gapminder/children_per_woman_total_fertility.csv") %>%   
@@ -163,7 +163,7 @@ left_join(data_population, data_fertility, by = c("country", "year"))
 
 1. Join the two data frames `data_population` and `data_life_exp`
 
-```{r}
+```{r, exercise}
 left_join(data_population, data_life_exp)
 
 ```
@@ -172,7 +172,7 @@ left_join(data_population, data_life_exp)
   - hint: the join functions can only handle one table at a time
   - Optional: reorder so that continent is the first variable
 
-```{r}
+```{r, exercise}
 data_population %>% 
   left_join(data_life_exp) %>%
   left_join( data_continent) %>% 
@@ -184,7 +184,7 @@ data_population %>%
 
 Now using join and pipes, we can built a big table of data containing all variables
 
-```{r}
+```{r, exercise}
 data <- 
   data_fertility %>% 
   left_join(data_population) %>% 
@@ -209,7 +209,7 @@ First let's refresh some of the commands we learnt yesterday: `select`, `filter`
   - Hint: the command `write_csv` will save a table and works with the pipe.
   
   
-```{r}
+```{r, exercise}
 data %>% 
   filter(year > 1900, continent == "Europe") %>% 
   select(country, year, fertility, population) %>% 
@@ -224,7 +224,7 @@ data %>%
   - mean of variables fertility and life_expectancy
   - hints: the functions summarise and n_distinct will be useful
 
-```{r}
+```{r, exercise}
 data %>%
   summarise(
     start = min(year),
@@ -247,7 +247,7 @@ Your answer should look like this:
   - you won't be able to solve this, without material from the next section. But think about what you would in principle like to do.
 
 
-```{r}
+```{r, exercise}
 
 ```
 
@@ -298,7 +298,7 @@ Use the commands `group_by`  command to
 1. Calculate average values of life_expectancy and population for each country in the period 1990-1999
   - hint: you'll also need `filter` and `summarise`
 
-```{r}
+```{r, exercise}
 data %>%
   filter(year >= 1990, year < 2000) %>%
   group_by(country) %>%
@@ -381,68 +381,6 @@ data %>%
   ggplot(aes(gdp_per_capita, fertility, col = country)) + 
   geom_line(col = "blue") + geom_point(size = .5, col = "darkblue") + 
   theme_minimal()
-```
-
-## Colour schemes
-
-### Continuous colour and discrete colour
-
-### Colour-blindness
-
-https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
-
-```{r}
-library(viridis)
-library(hexbin)
-
-tibble(x = rnorm(10000), y = rnorm(10000)) %>%
-  ggplot(aes(x = x, y = y)) +
-  geom_hex() + coord_fixed() +
-  scale_fill_viridis(option="D")+ 
-  theme_bw()
-```
-
-
-
-```{r}
-p <- data %>% 
-  filter(year==1990) %>% 
-  ggplot(aes(life_expectancy, gdp_per_capita)) + 
-  geom_point(size=3, aes(colour = continent)) +
-  scale_y_log10() +
-  scale_color_viridis(discrete=TRUE) +
-  theme_bw()
-
-p
-```
-
-There are many more themes, e.g. from `ggsci` package
-
-Nature Publishing Group
-```{r}
-library(ggsci)
-
-p + scale_color_npg()
-```
-
-A different theme (American Academy of Science):
-```{r}
-p + scale_color_aaas()
-```
-
-## Font size
-
-Change all the font sizes
-
-```{r}
-p + scale_color_aaas() +
-theme(text = element_text(size=18)) 
-```
-
-Change just axis titles
-```{r}
-p + scale_color_aaas() +
-theme(axis.title = element_text(size=18)) 
 ```
 
 ### Exercise
