@@ -5,8 +5,7 @@ date: "Feb 2021"
 output: html_document
 ---
 
-
-# Introduction to gapminder data (Will)
+# Introduction to gapminder data
 
 For day 2's exercises, we're going to use the famous gapminder dataset, maintained at [gapminder.org](http://gapminder.org)
 
@@ -14,7 +13,7 @@ This dataset tells a grand story about human development across countries, and w
 
 **Exercise**: With your partner, review the `README` for the data at `data/gapminder/readme.md` to see the variables included. 
 
-# Tidy Data concept (Dony)
+# Tidy Data concept
 
 - What is tidy data?
 - Converting from long to wide data
@@ -90,7 +89,7 @@ data_gdp <- read_csv("data/gapminder/income_per_person_gdppercapita_ppp_inflatio
 ```
 
 
-# Advanced data manipulation with `dplyr` (Fonti, Daniel)
+# Advanced data manipulation with `dplyr`
 
 We're now going to focus in on some more advanced features of dplyr. First, we need to load a series of tables and use `pivot_longer` to reorganise them. 
 
@@ -357,7 +356,7 @@ data <-
   )
 ```
 
-# Advanced data visualisation with `ggplot2` (Aniko)
+# Advanced data visualisation with `ggplot2`
 
 This session will show you some more advanced plotting techniques, building on the basic plots from Day 1 and using the gapminder data. But first, let'smake a basic plot. 
 
@@ -382,7 +381,6 @@ data %>%
   ggplot(aes(gdp_per_capita, fertility, col = country)) + 
   geom_line(col = "blue") + geom_point(size = .5, col = "darkblue") + 
   theme_minimal()
-```
 ```
 
 ## Colour schemes
@@ -475,7 +473,7 @@ data %>%
   theme(axis.title = element_text(size=18)) 
 ```
 
-## Facets (Will)
+## Facets
 
 1. Filter to data from three years:  1800, 1850,1900, 1950,2000
 
@@ -553,7 +551,7 @@ data %>%
   facet_wrap(~year)
 ```
 
-# Reproducible research (Dan)
+# Reproducible research
 
 **Exercises:** Discuss with your partner 
 
