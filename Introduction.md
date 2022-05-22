@@ -55,3 +55,36 @@ Expectations
   - We're going to do a lot of live coding -> why?
   - Materials will be circulated, but we don't have fully worked files for you. There are lots of these already available (see Resources sections), including our own website: [Environmental Computing](http://environmentalcomputing.net/) 
   - Use the circulated files to take notes as you follow along
+
+
+# Schedule
+
+## Day 1
+
+- Projects (Daniel)
+- Introduction to using Rmarkdown (Will)
+- Introduction to movies dataset (Will)
+- Introduction to the tidyverse? (Will)
+- What is a `tibble`? (Will)
+- Reading data (Will)
+- Data manipulation with `dplyr` (Daniel)
+- Pipes (Daniel)
+
+(lunch)
+- Imagine your plot (Will)
+- Intro to data visualisation with `ggplot2` (Isaac)
+
+# Day 2
+
+- Introduction to gapminder data (Daniel) 
+- Tidy Data concept (Will)
+- Advanced data manipulation with `dplyr` (Daniel)
+  - Joining tables
+  - Handling NA's (missing data)
+
+(lunch)
+
+- Advanced data visualisation with `ggplot2` (Will)
+  - Facets
+  - Custom Themes
+- Reproducible research (Daniel)
