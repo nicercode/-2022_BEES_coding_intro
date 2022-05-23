@@ -1,7 +1,7 @@
 ---
 title: "Data Manipulation and Visualization (2)"
-author: "Instructors: Daniel Falster, Will Cornwell, Fonti Kar, Anikó Tóth, Dony Indiarto"
-date: "Feb 2021"
+author: "Instructors: Daniel Falster, Will Cornwell"
+date: "May 2022"
 output: html_document
 ---
 
@@ -344,7 +344,7 @@ a_more_flexible_quick_way <- seq(from=10,to=20,by=2)
 
 ### "Is it in?" 
 
-(why this is useful will become clear later)
+Store this operation in your memory banks, and why this is useful will become clear later.
 
 ```{r}
 14 %in% a_more_flexible_quick_way
