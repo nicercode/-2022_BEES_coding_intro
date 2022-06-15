@@ -1,13 +1,10 @@
 ---
 title: "Data Manipulation and Visualization"
-author: "Instructors: Daniel Falster, Will Cornwell, Fonti Kar, Anikó Tóth, Dony Indiarto"
-date: "Feb 2020"
+author: "Instructors: Daniel Falster, Will Cornwell, Isaac Towers"
 output: html_document
-editor_options: 
-  chunk_output_type: console
 ---
 
-# Introduction to using Rmarkdown (Aniko)
+# Introduction to using Rmarkdown
 
 - File extension `*.Rmd`
 - Can be notebook or markdown
@@ -36,12 +33,13 @@ The Rstudio interface makes it easy to work with both Rmarkdown (`*.Rmd`) and ma
 
 **Exercise**:  Create a new R markdown document (File -> New -> R Markdown, choose HTML). Add some text, then some code. Run the code chunks. Compile into an html file.   
 
-# Introduction to movies dataset (Fonti)
+# Introduction to movies dataset
 
 For today's exercises we're using a data on movie production, from the ["Tidy Tuesday" collection](https://github.com/rfordatascience/tidytuesday). 
 
 ```{r}
-library(tidyverse)
+library(readr)
+library(ggplot2)
 movies <- read_csv("data/movie_profit/movie_profit.csv")
 ```
 
@@ -60,12 +58,13 @@ or summarise using the `skimr` package:
 
 ```{r}
 skimr::skim(movies)
+str(movies)
 ```
 
 **Exercise**: With your partner, review the `README` for the data at `data/movie_profit/readme.md` to see the variables included. 
 
 
-# What is the tidyverse? (Will)
+# What is the tidyverse?
 
 * The [Tidyverse](http://tidyverse.org) is the name given to suite of R packages designed for seamless data analysis
 * Designed to help you fall into a **"Pit of Success"**
@@ -78,111 +77,49 @@ Load (and install) individually or all together
 
 ```{r, eval = FALSE}
 library(dplyr)
-library(readr)
-library(tidyr)
 library(ggplot2)
 ```
-or
-```{r, eval = FALSE}
-library(tidyverse)
-```
 
-**Exercise**: Make sure you can load the `tidyverse`.
-
-
-## What is a `tibble`? 
-
-Basically, it's a better data frame.
-
-Key features of a dataframe:
-
-- table of data
-- each column may have a different data type: character, double, integer, bool, string.
-
-Tibbles have extra functionality:
-
-* Prints a short summary at console
-* Generates suitable warnings 
-* Won't convert strings to factors
-* No partial column-name matching
-* Behaves consistently with `[` and `[[`
-* For more, see [tibble.tidyverse.org](tibble.tidyverse.org)
-
-```{r}
-movies
-```
-
-# Reading data (Aniko)
+# Reading data
 
 Where possible, we recommend using 
 
 - `csv` files (common separated files) to store data
-- the `readr` package to read and write data
-
-Why `readr`?
-
-* Fast
-* Won't convert strings to factors
-* Can control how columns are parsed
 
 ```{r}
-movies <- read_csv("data/movie_profit/movie_profit.csv")
+movies <- read.csv("data/movie_profit/movie_profit.csv")
 ```
 
-Has a bunch of extra arguments: guess_max, trim_ws, skip, na
+Has a bunch of extra arguments: skip, check.names
 
 **Exercises**: 
 
-1. Review the help for `read_csv` and figure out what one of the above arguments does.
-2. Use `read_csv` to load data file `data/plant_height/plantHeightSingleSpp.csv`
-3. Use `read_csv` to load data file `data/sydney_beaches/temperature.csv`
+1. Review the help for `read.csv` and figure out what one of the above arguments does.
+2. Use `read.csv` to load data file `data/plant_height/plantHeightSingleSpp.csv`
+3. Use `read.csv` to load data file `data/sydney_beaches/temperature.csv`
 
-When reading data, `read_csv` tries to guess column types. We can override this by specifying column types exactly.
+```{r, exercise}
+```
+
+```{r, exercise}
+```
+
+
+When reading data, `read.csv` tries to guess column types. We can override this by specifying column types exactly.
 
 Read everything as characters
 
-```{r}
-read_csv("data/movie_profit/movie_profit.csv", 
-         col_types = cols(.default = col_character())
-)
-```
-
-Specify by variable-by-variable:
-
-```{r}
-read_csv("data/movie_profit/movie_profit.csv", 
-         col_types = cols(
-           X1 = col_integer(),
-           release_date = col_character(),
-           movie = col_character(),
-           production_budget = col_double(),
-           domestic_gross = col_double(),
-           worldwide_gross = col_double(),
-           distributor = col_character(),
-           mpaa_rating = col_character(),
-           genre = col_character()
-         )
-)
+```{r, exercise}
 ```
 
 Also other variants
 
-- `read_tsv`: load tab-separated data
-- `read_delim`: load file by specifying the delimiter
+- `read.delim`: load file by specifying the delimiter
 
-```{r}
-read_delim("data/movie_profit/movie_profit.csv", ",")
+```{r, exercise}
 ```
 
-To load data from excel spreadsheets, try the `readxl` package.
-
-
-```{r}
-library(readxl)
-read_xlsx("data/movie_profit/movie_profit.xlsx")
-```
-
-# Data manipulation with `dplyr` (Dan)
+# Data manipulation with `dplyr`
 
 Motivation:
 
@@ -210,66 +147,26 @@ Examples:
 To select certain variables:
 
 ```{r}
-select(movies, movie, production_budget, distributor)
-select(movies, movie, everything())
-select(movies, movie, starts_with("pr"))
-select(movies, -starts_with("pr"))
+select(movies, genre)
 ```
 
 To filter to particular rows:
 
 ```{r}
-
-movies$distributor == "Universal"
-
 filter(movies, distributor == "Universal")
-filter(movies, distributor == "Universal", mpaa_rating == "PG")
 ```
-
 
 To sort by certain variables:
 
 ```{r}
 arrange(movies, distributor, production_budget)
-
-arrange(movies, distributor, desc(production_budget))
-```
-
-
-To rename a variable:
-```{r}
-rename(movies, budget = production_budget)
-
-select(movies, movie, budget = production_budget)
 ```
 
 Create a new variable:
 
 ```{r}
-mutate(movies, 
-       log_budget = log10(production_budget)
-       )
-
-movies2 <- 
-  mutate(movies, 
-       log_budget = log10(production_budget)
-       )
+mutate(movies, log_budget = log10(production_budget))
 ```
-
-
-```{r}
-summarise(movies,
-    n_movies = n_distinct(movie)
-    )
-
-movie_summary <- 
-  summarise(movies,
-    n_movies = n_distinct(movie),
-    n_distributor = n_distinct(distributor),
-    budget_max = max(production_budget)
-    )
-```
-
 
 ## Pipes
 
@@ -283,11 +180,7 @@ The pipe is a bit of magic. It's written by `%>%` (Shift-Command-M on Mac or Shi
 Examples:
 
 ```{r}
-length(unique(movies$distributor))
-
-movies$distributor %>% unique() 
-
-movies$distributor %>% unique() %>% length()
+movies$distributor %>% unique()
 ```
 
 ```{r}
@@ -316,87 +209,34 @@ movies %>% filter(distributor == "Universal")
 This means we can use pipes to join data verbs to make a data sentence. 
 
 ```{r}
-movies2 <-
-  movies %>%
+movies %>%
   filter(distributor == "Universal") %>%
-  select(movie, mpaa_rating) %>% 
-  arrange(mpaa_rating)
-
-movies %>% filter(distributor == "Universal") %>% select(movie, mpaa_rating) %>% arrange(mpaa_rating)
-
-# Not this
-movies %>% filter(distributor == "Universal")
+  select(movie, mpaa_rating)
 ```
-
-```{r}
-movies %>% 
-  filter(distributor == "Universal") %>% 
-  select(movie, mpaa_rating) %>% 
-  arrange(mpaa_rating)
-```
-
 
 **Exercises:** Apply the `dplyr` package and your new data wrangling skills to the movies dataset to 
 
+
 1. Create a subset of the dataset consisting of only movies distributed by `Walt Disney`
-
-```{r}
-movies %>% 
-  filter(distributor == "Walt Disney")
-```
-
-
 2. As above and only including variables `movie`, `worldwide_gross`, and `production_budget`
-
-```{r}
-
-movies %>% 
-  filter(distributor == "Walt Disney") %>% 
-  select(movie, worldwide_gross, production_budget)
-
-
-```
-
 3. As above but with data sorted alphabetically by `movie`
+4. As above but with an additional column return given by `worldwide_gross/production_budget`
 
-```{r}
-movies %>% 
-  filter(distributor == "Walt Disney") %>% 
-  select(movie, worldwide_gross, production_budget) %>%
-  arrange(desc(movie))
+
+```{r, exercise}
 ```
 
-4.  As above but with an additional column return given by `worldwide_gross/production_budget`
-
-
-```{r}
-movies %>% 
-  filter(distributor == "Walt Disney") %>% 
-  select(movie, worldwide_gross, production_budget) %>%
-  arrange(movie) %>% 
-  mutate(return = worldwide_gross/production_budget)
-
-```
-
-# Data visualisation
-
-## Imagine your plot (Will)
+# Imagine your plot
 
 https://www.data-to-viz.com
 
-# Intro to data visualisation with `ggplot2` (Fonti)
+# Intro to data visualisation with `ggplot2`
 
 See presentation in `slides` folder
 
-##Examples
+**Examples from the slides:**
 
-Load some extra packages
-```{r}
-library(janitor)
-library(lubridate)
-library(patchwork)
-library(viridis)
-```
+## An example
 
 Let's start by building a ggplot from the ground up!
 
@@ -428,353 +268,30 @@ ggplot(data = movies, aes(x = genre, y = production_budget)) +
 ```{r}
 ggplot(data = movies, aes(x = genre, y = production_budget)) + 
   geom_boxplot() 
+ggsave("figures/production_budget_boxplot.pdf")
 ```
 
-More data exploration plots
-```{r}
-#Density/Histograms
-ggplot(data = movies, aes(x = log(domestic_gross))) + 
-  geom_histogram(aes(y = ..density..)) +
-  geom_density() 
+## More data exploration plot excersizes
 
-#Scatter plots for exploring relationships
-ggplot(data = movies, aes(x = production_budget, y = domestic_gross)) +   geom_point(alpha = 0.5)
+Use the ggplot cheat sheet!
 
-data_summary <- function(x) {
-   m <- mean(x)
-   ymin <- m-sd(x)
-   ymax <- m+sd(x)
-   return(c(y=m,ymin=ymin,ymax=ymax))
-}
+Question 1: Is the distribution of domestic grosses across movies closer to a normal distribution or an log-normal distribution?
 
-#Violin plots with customised function
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_violin(trim = F) + 
-  geom_point(colour = "navy", size = 1, alpha = 0.1) + 
-  stat_summary(fun.data="data_summary", col = "black") 
+```{r, exercise}
+```
+Question 2:
+Is there a relationship between production budget and domestic gross?
+
+```{r, exercise}
 ```
 
-Why plot: Communicate science, results
+Question 3:
+Does the production budget and domestic gross relationship depend on genre?
 
-```{r}
-#Barplot production budget by Top 6 most common distributors
-top_6 <- 
-  movies %>% 
-  janitor::tabyl(distributor) %>% arrange(-n) %>% 
-  filter(n >= 240) %>% pull(distributor)
-
-A <- movies %>% filter(distributor %in% top_6) %>% 
-ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
-  geom_col() + 
-  ylab("Production budget (USD)") + 
-  xlab("Distribution companies") + 
-  scale_fill_manual(values = c("#A42820", "#5F5647", "#3F5151", "#4E2A1E", "#550307", "#0C1707")) + 
-  coord_flip() + 
-  theme_bw() + 
-  theme(legend.position = "none")
-A
-
-#Side by side plot of domestic gross and worldwide gross of Top 6 most common distributors
-distributor_long <- 
-  movies %>%
-  filter(distributor %in% top_6) %>% 
-  select(distributor, domestic_gross, worldwide_gross) %>% 
-  pivot_longer(cols = 2:3, names_to = "type")
-
-B <- 
-  ggplot(distributor_long, aes(x = reorder(distributor, -value, sum), y = value, fill = type)) + 
-  geom_col(position = "dodge") +
-  ylab("Gross income (USD)") + 
-  xlab("Distribution companies") + 
-  scale_fill_manual(values = c("#550307", "#0C1707"), name = "Type of income", labels = c("Domestic", "Worldwide")) + 
-  coord_flip() + 
-  theme_bw() + 
-  theme(legend.position = "bottom",
-        legend.title = element_text(size = 10),
-        axis.title.y = element_blank(),
-        axis.text.y = element_blank())
-
-B
-
-#Plot release date by production budget
-#Set release date as a date
-movies <- 
-  movies %>% 
-  mutate(release_date = lubridate::mdy(release_date))
-
-C <- 
-  ggplot(data = movies, aes(x = release_date, y = production_budget)) + 
-  geom_point(alpha = 0.4, colour = "#0C1707") + 
-  xlab("Release Date (Year)") + 
-  ylab("Production budget (USD)") + 
-  theme_bw() 
-
-C
-
-#Production cost and worldwide gross
-D <- 
-  ggplot(data = movies, aes(x = production_budget, y = worldwide_gross)) + 
-  geom_point(alpha = 0.4, colour = "#0C1707") + 
-  geom_point(data = movies %>% filter(production_budget > 150000000 & worldwide_gross > 1000000000), colour = "#A42820") +
-  geom_text(data = movies %>% filter(production_budget > 150000000 & worldwide_gross > 1000000000), aes(label = movie), size = 3, hjust = 1.1) + 
-  geom_point(data = movies %>% filter(production_budget < 50000000 & worldwide_gross > 787000000), colour = "#5F5647") + 
-  geom_text(data = movies %>% filter(production_budget  < 50000000 & worldwide_gross > 787000000), aes(label = movie), size = 3, hjust = -0.1) + 
-  geom_point(data = movies %>% filter(production_budget < 100000000 & worldwide_gross > 1150000000), colour = "gold") + 
-  geom_text(data = movies %>% filter(production_budget < 100000000 & worldwide_gross > 1150000000), aes(label = movie), size = 3, hjust = -0.2) + 
-  ylab("Worldwide gross (USD)") + 
-  xlab("Production budget (USD)") + 
-  theme_bw() 
-
-D
-
-(A + B + C) / D
+```{r, exercise}
 ```
+Question 4:
+Can you make the last plot look better?
 
-Summarise and plot
-
-```{r}
-mpaa_rating_means <- 
-  movies %>% 
-  filter(! is.na(mpaa_rating)) %>% 
-  group_by(mpaa_rating) %>% 
-  summarise(mean_worldwide_gross = mean(worldwide_gross),
-            se_worldwide_gross = sd(worldwide_gross)/sqrt(length(worldwide_gross)),
-            lower_worldwide_gross = mean_worldwide_gross - se_worldwide_gross,
-            upper_worldwide_gross = mean_worldwide_gross + se_worldwide_gross) 
-
-head(mpaa_rating_means)
-
-ggplot(data = mpaa_rating_means, aes(x = mpaa_rating, y = mean_worldwide_gross)) + 
-  geom_col() + 
-  geom_errorbar(aes(ymin = lower_worldwide_gross, 
-                    ymax = upper_worldwide_gross),
-                width = 0.2)
-  
+```{r, exercise}
 ```
-
-Customise "Accessorising"
-```{r}
-#Colour themes
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() + 
-  theme_classic() 
-
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() + 
-  theme_bw() 
-
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() + 
-  theme_dark() 
-
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() + 
-  theme_void() 
-```
-
-```{r}
-#Axis labels
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() +
-  ylab("Production budget (USD)") + 
-  xlab("Genre") + 
-  theme_bw() 
-
-#Axis labels, colour, points and size/type face/font
-ggplot(data = movies, aes(x = genre, y = production_budget, fill = genre)) + 
-  geom_boxplot(outlier.colour = "red", size = 1.2) +
-  ylab("Production budget (USD)") + 
-  xlab("Genre") + 
-  theme_bw() + 
-  theme(axis.title.x = element_text(family = "Times", face = "bold.italic", size = 12),
-        axis.title.y = element_text(family = "Times", face = "bold.italic", size = 12))
-```
-
-## Create your own theme - do it once and do it right
-
-```{r}
-thesis_theme <- 
-  theme_bw() + 
-  theme(axis.title.x = element_text(family = "Calibri", face = "bold", size = 16),
-        axis.title.y = element_text(family = "Calibri", face = "bold", size = 16),
-        axis.text.x = element_text(family = "Calibri" , size = 12),
-        axis.text.y = element_text(family = "Calibri", size = 12),
-        strip.text = element_text(family = "Calibri", size = 12))
-
-ggplot(data = movies, aes(x = genre, y = production_budget)) + 
-  geom_boxplot() +
-  ylab("Production budget (USD)") + 
-  xlab("Genre") + 
-  thesis_theme
-```
-
-## A ecostatistician's tool box: 
-### Facet wraps
-```{r}
-top6_plot <- 
-  movies %>% filter(distributor %in% top_6 & !is.na(mpaa_rating)) %>% 
-  ggplot(data = ., aes(x = production_budget, y = domestic_gross)) +  
-  geom_point() +
-  theme_bw()
-
-top6_plot + 
-  facet_wrap(~distributor) 
-
-top6_plot + 
-  facet_grid(distributor ~ genre) 
-```
-
-### Scientific labels
-https://robjhyndman.com/hyndsight/latex2exp/
-
-```{r}
-#Make some fake data
-n <- 25
-# the parameters
-beta_0 <- 0.0005 # the true intercept
-beta_1 <- 0.02 # the true slope
-sigma <- 0.03 # the true standard deviation
-
-temperature <- seq(20,60, by = 4)
-metabolic_rate <- beta_0 + beta_1*temperature + rnorm(temperature, sd=sigma)
-fake_data <- data_frame(temperature, metabolic_rate)
-
-ggplot(fake_data, aes(x = temperature, y = metabolic_rate)) + 
-  geom_point(size = 3) + 
-  scale_y_log10() +
-  ylab(expression(log~VCO[2]~mL~min^{-1})) + 
-  xlab(expression(Temperature^{º}~C)) + 
-  theme(axis.title.y = element_text(size = 30),
-        axis.title.x = element_text(size = 30))
-```
-
-### Add a bit of flair: colour schemes
--Viridis, great for continuous data
--Rcolourbrewer Colour blind friendly palettes
--Wes Anderson palettes
-
-```{r}
-#Colour blind friendly
-library(RColorBrewer)
-display.brewer.all(colorblindFriendly = T)
-
-ggplot(data = movies, aes(x = genre, y = production_budget, fill = genre)) + 
-  geom_violin(trim = F, alpha = 0.7) + 
-  geom_point(colour = "white", size = 1, alpha = 0.1) + 
-  stat_summary(fun.data="data_summary", col = "black") + 
-  scale_fill_brewer(palette = "Dark2") + 
-  ylab("Production budget (USD)") + 
-  xlab("Genres") +
-  theme(legend.position = "none")
-
-#Viridis
-library(viridisLite)
-
-ggplot(data = movies, aes(x = production_budget, y = worldwide_gross)) +
-  geom_hex() + 
-  scale_x_log10() + 
-  scale_y_log10() + 
-  scale_fill_viridis() + 
-  ylab("Production budget (USD)") + 
-  xlab("Worldwide gross (USD)") +
-  thesis_theme
-
-#Wes Andersson
-library(wesanderson)
-
-movies %>% filter(distributor %in% top_6) %>% 
-ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
-  geom_col() + 
-  ylab("Production budget (USD)") + 
-  xlab("Distribution companies") + 
-  scale_fill_manual(values = wes_palette("IsleofDogs1")) + 
-  coord_flip() + 
-  theme_bw() + 
-  theme(legend.position = "none")
-
-movies %>% filter(distributor %in% top_6) %>% 
-ggplot(aes(x = reorder(distributor, -production_budget, sum), y = production_budget, fill = distributor)) + 
-  geom_col() + 
-  ylab("Production budget (USD)") + 
-  xlab("Distribution companies") + 
-  scale_fill_manual(values = wes_palette("IsleofDogs1")) + 
-  coord_flip() + 
-  theme_bw() + 
-  theme(legend.position = "none")
-```
-
-### Arranging multiple plots
-https://patchwork.data-imaginist.com/
-```{r}
-#Install package
-#install.packages('patchwork')
-library(patchwork)
-
-#Different layouts
-A / D 
-
-D / (A + C)
-
-(A + B + C) / D
-
-#Annotating
-(A + B) / D + plot_annotation(tag_levels = 'A')
-```
-
-
-**Exercises**: Try to answer these questions below by making some relevant figures
-
-1. Are there more cheap films?
-
- - Hint: create a histogram-plot with production_budget at the x-axis
-
-```{r}
-
-ggplot(movies, aes(production_budget)) +
-  geom_histogram() +
-  scale_x_log10()
-
-```
- 
-   
-2. What genres make the highest return on investment?
-
- - Hints
-   - calculate the ratio of worldwide gross profit and production budget
-   - create a box-plot with x-axis representing the genre and y-axis representing the ratio
-   - Rescale y-axis to log scale
-
-```{r}
-
-movies2 <- movies %>% 
-  mutate(roi = worldwide_gross/ production_budget)
-
-ggplot(movies2, aes(x=genre, y = roi)) +
-  geom_boxplot() +
-  scale_y_log10()
-
-movies %>% 
-  mutate(roi = worldwide_gross/ production_budget) %>% 
-  ggplot(aes(x=genre, y = roi)) +
-  geom_boxplot() +
-  scale_y_log10()
-
-```
-   
-3. What genres make the highest return on investment?
-
- - Hints
-   - create a scatter plot with with the x-axis representing the production_budget and the y-axis representing the worldwide_gross profit
-   - Rescale the x- and y-axis to log scale
-   - add regression line with `stat_smooth()`
-
-```{r}
-movies %>% 
-  ggplot(aes(x = production_budget, y = worldwide_gross)) +
-  geom_point(alpha = 0.2) +
-  scale_x_log10() + scale_y_log10() +
-  geom_smooth()
-
-
-```
-
