@@ -398,6 +398,33 @@ library(patchwork)
 library(viridis)
 ```
 
+Let's start by building a ggplot from the ground up!
+
+First all of all, what is my question? Although it might seem obvious, it can be really helpful to consider question you are trying to ask before starting to plot.In this case, my question: does the amount of money spent to create a movie vary by genre? For example, action movies might be more expensive compared to comedies because of all of the special effects required. 
+
+Next, investigate the dataset to see if we have any data that will allow us to answer that question. 
+
+```{r}
+head(movies)
+```
+
+
+```{r}
+movies %>%
+  filter(production_budget > 1e7) %>% 
+  ggplot(aes(x = genre, y = production_budget)) +
+  geom_boxplot(outlier.colour = "red") +
+  theme_classic() +
+  xlab("Genre") -> p
+
+ggsave("plot.png", p)
+```
+
+```{r}
+ggplot(data = movies, aes(x = genre, y = production_budget)) + 
+  geom_boxplot() 
+```
+
 ```{r}
 ggplot(data = movies, aes(x = genre, y = production_budget)) + 
   geom_boxplot() 
